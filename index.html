@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NexusGlobal FIX</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+body { background:#020617; color:white; font-family:sans-serif; }
+.hidden { display:none; }
+.glass { background:rgba(255,255,255,0.05); padding:20px; border-radius:10px; }
+input, select { color:black; }
+</style>
+</head>
+
+<body class="p-6">
+
+<h1 class="text-2xl mb-6">NexusGlobal</h1>
+
+<div id="auth">
+<div class="glass">
+
+<input id="email" placeholder="Email" class="w-full p-2 mb-2">
+<input id="pass" type="password" placeholder="Mot de passe" class="w-full p-2 mb-2">
+
+<button id="btn-auth" class="bg-blue-600 w-full p-2 mb-2">Connexion</button>
+<button id="btn-switch" class="w-full text-sm text-gray-400">Créer un compte</button>
+
+</div>
+</div>
+
+<div id="app" class="hidden">
+
+<h2 class="mt-6">Créer annonce</h2>
+
+<input id="subs" placeholder="Abonnés" class="w-full p-2 mb-2">
+<input id="price" type="number" placeholder="Prix" class="w-full p-2 mb-2">
+
+<button id="btn-add" class="bg-green-600 w-full p-2 mb-4">Publier</button>
+
+<div id="listings"></div>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+const SUPABASE_URL = "https://yshwpfmlipaicispnroe.supabase.co";
+const SUPABASE_KEY = "sb_publishable_LBD0g00FuiFPdvmr75gnIg_1kuQFKAt";
+const ADMIN_EMAIL = "demeaboubacar015@gmail.com";
+
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let isLogin = true;
+
+// SWITCH
+document.getElementById("btn-switch").onclick = () => {
+isLogin = !isLogin;
+document.getElementById("btn-auth").innerText = isLogin ? "Connexion" : "Créer compte";
+document.getElementById("btn-switch").innerText = isLogin ? "Créer un compte" : "Se connecter";
+};
+
+// AUTH BUTTON
+document.getElementById("btn-auth").onclick = async () => {
+
+const email = document.getElementById("email").value;
+const pass = document.getElementById("pass").value;
+
+if(!email || !pass){
+alert("Remplis les champs");
+return;
+}
+
+if(isLogin){
+const { data, error } = await supabase.auth.signInWithPassword({ email, password: pass });
+
+if(error){ alert(error.message); return; }
+
+startApp(data.user);
+
+}else{
+const { error } = await supabase.auth.signUp({ email, password: pass });
+
+if(error){ alert(error.message); return; }
+
+alert("Compte créé !");
+}
+};
+
+// START APP
+function startApp(user){
+document.getElementById("auth").classList.add("hidden");
+document.getElementById("app").classList.remove("hidden");
+
+if(user.email === ADMIN_EMAIL){
+alert("ADMIN connecté");
+}
+
+loadListings();
+}
+
+// ADD LISTING
+document.getElementById("btn-add").onclick = async () => {
+
+const { data:userData } = await supabase.auth.getUser();
+
+const subs = document.getElementById("subs").value;
+const price = document.getElementById("price").value;
+
+if(!subs || !price){
+alert("Champs vides");
+return;
+}
+
+const { error } = await supabase.from("listings").insert([{
+followers: subs,
+price: price,
+user_id: userData.user.id
+}]);
+
+if(error){ alert(error.message); return; }
+
+alert("Ajouté !");
+loadListings();
+};
+
+// LOAD
+async function loadListings(){
+const { data } = await supabase.from("listings").select("*");
+
+const div = document.getElementById("listings");
+div.innerHTML = "";
+
+data.forEach(x=>{
+div.innerHTML += `<div class="glass mb-2">${x.followers} abonnés - ${x.price}$</div>`;
+});
+}
+
+});
+</script>
+
+</body>
+</html>
