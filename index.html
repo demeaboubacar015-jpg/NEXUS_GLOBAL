@@ -8,34 +8,34 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { --gold: #d4af37; --black: #050505; --gray: #121212; --green: #00ff00; --red: #ff4d4d; }
-        * { box-sizing: border-box; transition: 0.3s; }
-        body { background: var(--black); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding-bottom: 70px; overflow-x: hidden; }
+        * { box-sizing: border-box; transition: 0.3s; margin: 0; padding: 0; }
+        body { background: var(--black); color: white; font-family: 'Segoe UI', sans-serif; padding-bottom: 80px; overflow-x: hidden; }
         
-        /* AUTHENTIFICATION */
-        #auth-screen { position: fixed; inset: 0; background: var(--black); z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .auth-card { background: var(--gray); padding: 40px; border-radius: 25px; border: 1px solid var(--gold); width: 100%; max-width: 400px; text-align: center; box-shadow: 0 0 20px rgba(212, 175, 55, 0.2); }
+        /* ECRAN D'ACCÈS */
+        #auth-screen { position: fixed; inset: 0; background: var(--black); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .auth-card { background: var(--gray); padding: 40px; border-radius: 25px; border: 1px solid var(--gold); width: 100%; max-width: 400px; text-align: center; box-shadow: 0 0 30px rgba(212, 175, 55, 0.1); }
         
-        header { background: var(--black); border-bottom: 1px solid #222; padding: 20px; position: sticky; top: 0; z-index: 1000; text-align: center; color: var(--gold); font-weight: bold; letter-spacing: 2px; }
-        .feed { max-width: 600px; margin: auto; padding: 15px; }
+        /* DESIGN GENERAL */
+        header { background: var(--black); border-bottom: 1px solid #222; padding: 20px; text-align: center; color: var(--gold); font-weight: bold; letter-spacing: 3px; font-size: 1.2rem; }
+        .page { display: none; padding: 20px; max-width: 600px; margin: auto; animation: fadeIn 0.5s ease; }
+        .page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* ELEMENTS PRO */
+        input, select { width: 100%; padding: 15px; margin-bottom: 15px; border-radius: 12px; border: 1px solid #333; background: #000; color: white; font-size: 1rem; }
+        .btn-gold { background: var(--gold); color: black; border: none; padding: 18px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; text-transform: uppercase; font-size: 0.9rem; }
+        .btn-gold:active { transform: scale(0.98); }
+        
         .post { background: var(--gray); border-radius: 20px; margin-bottom: 25px; border: 1px solid #222; overflow: hidden; }
-        .post-img { width: 100%; height: 320px; object-fit: cover; }
+        .post-img { width: 100%; height: 300px; object-fit: cover; }
         .post-info { padding: 20px; }
 
-        .page { display: none; padding: 20px; animation: slideUp 0.4s ease; }
-        .page.active { display: block; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-        .admin-panel { display: none; background: linear-gradient(135deg, #004d00, #000); padding: 20px; border-radius: 15px; border: 1px solid var(--green); margin-bottom: 25px; }
-
-        input, select { width: 100%; padding: 15px; margin-bottom: 15px; border-radius: 10px; border: 1px solid #333; background: #000; color: white; font-size: 1rem; }
-        input:focus { border-color: var(--gold); outline: none; }
-        .btn-gold { background: var(--gold); color: black; border: none; padding: 18px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; font-size: 1rem; text-transform: uppercase; }
-        .btn-gold:disabled { background: #555; cursor: not-allowed; }
-        
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #0a0a0a; border-top: 1px solid var(--gold); display: flex; justify-content: space-around; padding: 15px 0; z-index: 1500; }
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #0a0a0a; border-top: 1px solid #222; display: flex; justify-content: space-around; padding: 15px 0; z-index: 1000; }
         .nav-item { color: #555; text-align: center; cursor: pointer; font-size: 0.7rem; }
         .nav-item.active { color: var(--gold); }
-        .nav-item i { font-size: 1.5rem; margin-bottom: 5px; }
+        .nav-item i { font-size: 1.4rem; margin-bottom: 5px; }
+
+        .admin-badge { background: var(--green); color: black; padding: 5px 10px; border-radius: 5px; font-size: 0.7rem; font-weight: bold; margin-bottom: 10px; display: inline-block; }
     </style>
 </head>
 <body>
@@ -43,212 +43,183 @@
     <div id="auth-screen">
         <div class="auth-card">
             <h1 style="color:var(--gold); margin-bottom:10px;">NEXUS GLOBAL</h1>
-            <p style="color:#888; font-size:0.8rem; margin-bottom:30px;">ACCÈS SÉCURISÉ À L'EMPIRE</p>
+            <p style="color:#888; font-size:0.75rem; margin-bottom:30px;">ACCÈS SÉCURISÉ À L'EMPIRE</p>
             
-            <input type="email" id="email" placeholder="Votre Email Professionnel">
-            <input type="password" id="pass" placeholder="Votre Mot de passe">
+            <input type="email" id="email" placeholder="Email Professionnel">
+            <input type="password" id="pass" placeholder="Mot de passe">
             
             <div style="text-align:left; margin-bottom:20px;">
                 <label style="font-size: 0.75rem; color:#aaa; cursor:pointer;">
-                    <input type="checkbox" id="check-18"> J'ai +18 ans et j'accepte les 15% de frais de sécurité Nexus.
+                    <input type="checkbox" id="check-18" checked> J'ai +18 ans et j'accepte les 15% de frais Nexus.
                 </label>
             </div>
             
-            <button class="btn-gold" id="btn-auth" onclick="handleAuth()">S'IDENTIFIER / CRÉER COMPTE</button>
-            <p id="auth-msg" style="font-size:0.7rem; margin-top:15px; color:var(--red);"></p>
+            <button class="btn-gold" id="btn-auth" onclick="handleAuth()">ENTRER DANS L'EMPIRE</button>
+            <p id="auth-msg" style="color:var(--red); font-size:0.7rem; margin-top:15px;"></p>
         </div>
     </div>
 
     <header>NEXUS GLOBAL</header>
 
     <div id="page-home" class="page active">
-        <div id="main-feed" class="feed">
-            <p style="text-align:center; color:#555; margin-top:50px;">Connexion au serveur Nexus...</p>
+        <div id="main-feed">
+            <p style="text-align:center; color:#555; margin-top:50px;">Connexion au flux Nexus...</p>
         </div>
     </div>
 
     <div id="page-tools" class="page">
-        <div id="admin-panel" class="admin-panel">
-            <h3 style="color:var(--green); margin-top:0; text-align:center;">PANNEAU PATRON</h3>
-            <p style="font-size:0.7rem; color:#aaa; text-align:center; margin-bottom:5px;">COMMISSIONS TOTALES (15%)</p>
-            <h2 id="revenu-entreprise" style="text-align:center; margin:0;">0 FCFA</h2>
-            <div id="admin-actions" style="margin-top:20px; border-top:1px solid #004d00; padding-top:15px;"></div>
+        <div id="admin-panel" style="display:none; background:#002200; border:1px solid var(--green); padding:20px; border-radius:20px; margin-bottom:20px;">
+            <div class="admin-badge">PATRON</div>
+            <p style="font-size:0.7rem; color:#888;">COMMISSIONS NEXUS</p>
+            <h2 id="revenu-total" style="color:var(--green);">0 FCFA</h2>
+            <div id="pending-approvals" style="margin-top:15px;"></div>
         </div>
 
-        <div style="background:linear-gradient(to right, #1a1a1a, #000); padding:25px; border-radius:20px; border: 1px solid var(--gold); text-align:center; margin-bottom:30px;">
-            <p style="font-size: 0.75rem; color:#888; letter-spacing:1px;">MON WALLET VENDEUR (85%)</p>
-            <h1 id="user-wallet" style="color:var(--gold); margin:10px 0; font-size:2.5rem;">0 FCFA</h1>
-            <button class="btn-gold" style="width:auto; padding:10px 30px; font-size:0.8rem;">DEMANDER UN RETRAIT</button>
+        <div style="background:linear-gradient(145deg, #1a1a1a, #050505); padding:25px; border-radius:25px; border:1px solid var(--gold); text-align:center; margin-bottom:30px;">
+            <p style="font-size: 0.7rem; color:#888;">MON WALLET (85%)</p>
+            <h1 id="user-wallet" style="color:var(--gold); font-size:2.5rem; margin:10px 0;">0 FCFA</h1>
+            <button class="btn-gold" style="padding:10px 20px; width:auto; font-size:0.7rem;">DEMANDER UN RETRAIT</button>
         </div>
 
-        <h3 style="color:var(--gold); margin-bottom:20px;"><i class="fas fa-plus-circle"></i> Publier un nouveau compte</h3>
-        <input type="text" id="p-name" placeholder="Nom du compte (ex: TikTok 250k @...)">
-        <input type="number" id="p-price" placeholder="Prix de vente souhaité (FCFA)" oninput="updatePreview()">
-        
-        <div id="calc-preview" style="background:#111; padding:15px; border-radius:10px; font-size:0.8rem; margin-bottom:15px; border-left:4px solid var(--gold);">
-            Tapez un prix pour voir vos gains...
-        </div>
-
-        <p style="font-size:0.75rem; color:#666;">Preuve de propriété (Image du profil) :</p>
+        <h3 style="color:var(--gold); margin-bottom:20px;"><i class="fas fa-plus"></i> PUBLIER UN COMPTE</h3>
+        <input type="text" id="p-name" placeholder="Nom (ex: TikTok 200k @...)">
+        <input type="number" id="p-price" placeholder="Prix de vente (FCFA)" oninput="calc()">
+        <div id="calc-res" style="font-size:0.75rem; color:#888; margin-bottom:15px;"></div>
+        <p style="font-size:0.7rem; color:#666;">Preuve (Screenshot Profil) :</p>
         <input type="file" id="f1" accept="image/*">
-        
         <button class="btn-gold" id="btn-pub" onclick="publish()">LANCER LA VÉRIFICATION</button>
     </div>
 
     <div class="bottom-nav">
-        <div class="nav-item active" onclick="switchTab('home')" id="nav-home">
-            <i class="fas fa-th-large"></i><br>Flux Marché
+        <div class="nav-item active" id="nav-home" onclick="switchTab('home')">
+            <i class="fas fa-globe"></i><br>MARCHÉ
         </div>
-        <div class="nav-item" onclick="switchTab('tools')" id="nav-tools">
-            <i class="fas fa-wallet"></i><br>Outils & Gains
+        <div class="nav-item" id="nav-tools" onclick="switchTab('tools')">
+            <i class="fas fa-wallet"></i><br>OUTILS/GAINS
         </div>
     </div>
 
     <script>
-        // --- CONFIGURATION ---
+        // CONFIGURATION
         const SUPABASE_URL = "https://yshwpfmlipaicispnroe.supabase.co";
         const SUPABASE_KEY = "sb_publishable_LBD0g00FuiFPdvmr75gnIg_1kuQFKAt";
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // --- AUTHENTIFICATION ---
+        // AUTHENTIFICATION
         async function handleAuth() {
             const email = document.getElementById('email').value;
             const pass = document.getElementById('pass').value;
             const btn = document.getElementById('btn-auth');
-            const msg = document.getElementById('auth-msg');
+            
+            if(!email || !pass) { alert("Remplissez vos accès."); return; }
 
-            if(!email || !pass) return msg.innerText = "Remplissez les champs.";
-            if(!document.getElementById('check-18').checked) return msg.innerText = "Acceptez les conditions.";
+            btn.innerText = "ACCÈS EN COURS...";
+            btn.disabled = true;
 
-            btn.disabled = true; btn.innerText = "Connexion sécurisée...";
+            try {
+                // Tentative login
+                let { data, error } = await supabase.auth.signInWithPassword({ email, password: pass });
 
-            // Tentative de Login
-            let { data, error } = await supabase.auth.signInWithPassword({ email, password: pass });
-
-            if (error) {
-                // Si échec, on tente de créer le compte
-                let res = await supabase.auth.signUp({ email, password: pass });
-                if(res.error) {
-                    msg.innerText = "Erreur: " + res.error.message;
-                    btn.disabled = false; btn.innerText = "RÉESSAYER";
+                if (error) {
+                    // Tentative inscription
+                    let res = await supabase.auth.signUp({ email, password: pass });
+                    if(res.error) throw res.error;
+                    
+                    await supabase.from('users').insert([{ id: res.data.user.id, email: email, role: 'seller' }]);
+                    alert("Compte Nexus Créé ! Bienvenue dans l'Empire. Re-cliquez pour entrer.");
+                    btn.innerText = "ENTRER DANS L'EMPIRE";
+                    btn.disabled = false;
                 } else {
-                    // Création profil SQL
-                    await supabase.from('users').insert([{ id: res.data.user.id, email: email, role: "seller" }]);
-                    alert("Compte Nexus créé ! Re-cliquez pour entrer.");
-                    btn.disabled = false; btn.innerText = "S'IDENTIFIER MAINTENANT";
+                    startApp(data.user);
                 }
-            } else {
-                startApp(data.user);
+            } catch (err) {
+                alert("Erreur Nexus : " + err.message);
+                btn.innerText = "RÉESSAYER";
+                btn.disabled = false;
             }
         }
 
         async function startApp(user) {
             document.getElementById('auth-screen').style.display = 'none';
-            // Vérification du rôle admin
-            const { data: profile } = await supabase.from('users').select('role').eq('id', user.id).single();
             
-            if(profile && profile.role === "admin") {
+            // Verif Admin
+            const { data: prof } = await supabase.from('users').select('role').eq('id', user.id).single();
+            if(prof && prof.role === 'admin') {
                 document.getElementById('admin-panel').style.display = 'block';
                 loadAdmin();
             }
             loadFeed();
-            loadWallet();
+            loadWallet(user.id);
         }
 
-        // --- GESTION DU FLUX ---
+        // FLUX ET VENTES
         async function loadFeed() {
-            const { data, error } = await supabase.from('listings').select('*').eq('status', 'valide').order('created_at', { ascending: false });
+            const { data } = await supabase.from('listings').select('*').eq('status', 'valide');
             const feed = document.getElementById('main-feed');
-            
-            if(error) return feed.innerHTML = "Erreur de chargement.";
-
-            feed.innerHTML = data && data.length > 0 ? data.map(item => `
+            if(!data || data.length === 0) {
+                feed.innerHTML = "<p style='text-align:center; color:#555; margin-top:50px;'>Aucun compte disponible.</p>";
+                return;
+            }
+            feed.innerHTML = data.map(i => `
                 <div class="post">
-                    <img src="${item.img_profil}" class="post-img">
+                    <img src="${i.img_profil}" class="post-img">
                     <div class="post-info">
-                        <div style="font-size:0.7rem; color:#888; text-transform:uppercase;">Compte Vérifié</div>
-                        <strong style="font-size:1.1rem;">${item.name}</strong>
-                        <div style="color:var(--gold); font-size:1.4rem; font-weight:bold; margin-top:5px;">${Number(item.price).toLocaleString()} FCFA</div>
-                        <button class="btn-gold" style="padding:12px; margin-top:15px; font-size:0.8rem;" onclick="buyFlow('${item.id}')">ACHETER VIA SÉCURITÉ NEXUS</button>
+                        <div style="color:var(--gold); font-size:1.2rem; font-weight:bold;">${Number(i.price).toLocaleString()} FCFA</div>
+                        <div style="font-size:0.9rem; margin-bottom:15px;">${i.name}</div>
+                        <button class="btn-gold" onclick="alert('Contactez le Prince pour le paiement sécurisé.')">ACHETER MAINTENANT</button>
                     </div>
                 </div>
-            `).join('') : "<div style='text-align:center; color:#555; padding:40px;'>Aucun compte n'est en vente pour le moment.</div>";
+            `).join('');
         }
 
-        // --- PUBLICATION RÉELLE ---
         async function publish() {
+            const btn = document.getElementById('btn-pub');
+            const file = document.getElementById('f1').files[0];
             const name = document.getElementById('p-name').value;
             const price = document.getElementById('p-price').value;
-            const file = document.getElementById('f1').files[0];
-            const btn = document.getElementById('btn-pub');
 
-            if(!name || !price || !file) return alert("Complétez tous les champs.");
-            if(file.size > 2 * 1024 * 1024) return alert("L'image est trop lourde (Max 2MB)");
-
-            btn.disabled = true; btn.innerText = "Cryptage et Envoi...";
+            if(!file || !name || !price) { alert("Détails manquants !"); return; }
+            btn.disabled = true; btn.innerText = "ENVOI...";
 
             try {
                 const user = (await supabase.auth.getUser()).data.user;
-                const path = `proofs/${user.id}-${Date.now()}`;
-                
-                const { error: upErr } = await supabase.storage.from('proofs').upload(path, file);
-                if(upErr) throw upErr;
-
-                const { data: urlData } = supabase.storage.from('proofs').getPublicUrl(path);
+                const path = `proofs/${Date.now()}_${file.name}`;
+                await supabase.storage.from('proofs').upload(path, file);
+                const { data: url } = supabase.storage.from('proofs').getPublicUrl(path);
 
                 await supabase.from('listings').insert([{
-                    user_id: user.id, name, price, img_profil: urlData.publicUrl, status: "en_attente"
+                    user_id: user.id, name, price, img_profil: url.publicUrl, status: 'en_attente'
                 }]);
 
-                alert("✅ Publication envoyée ! Nexus vérifie la légitimité du compte sous 30 min.");
+                alert("✅ Publication envoyée ! En attente de validation par le Patron.");
                 location.reload();
-            } catch (e) {
-                alert("Erreur: " + e.message);
-                btn.disabled = false; btn.innerText = "RÉESSAYER";
-            }
+            } catch (e) { alert(e.message); btn.disabled = false; }
         }
 
-        // --- FONCTIONS ADMIN ET WALLET ---
-        async function loadAdmin() {
-            const { data: sales } = await supabase.from('sales').select('commission');
-            const total = sales ? sales.reduce((s, a) => s + Number(a.commission), 0) : 0;
-            document.getElementById('revenu-entreprise').innerText = total.toLocaleString() + " FCFA";
-
-            const { data: pendings } = await supabase.from('listings').select('*').eq('status', 'en_attente');
-            const area = document.getElementById('admin-actions');
-            area.innerHTML = pendings && pendings.length > 0 ? pendings.map(p => `
-                <div style="background:#111; padding:15px; border-radius:10px; margin-bottom:10px; border-left:3px solid var(--green);">
-                    <p style="margin:0; font-size:0.8rem;">${p.name} (${p.price} FCFA)</p>
-                    <button onclick="approve('${p.id}')" style="background:var(--green); color:black; border:none; padding:5px 10px; border-radius:5px; margin-top:5px; cursor:pointer;">VALIDER</button>
-                </div>
-            `).join('') : "<p style='font-size:0.7rem; color:#666;'>Aucun compte en attente.</p>";
+        // OUTILS NAV
+        function switchTab(t) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById('page-'+t).classList.add('active');
+            document.getElementById('nav-'+t).classList.add('active');
         }
 
-        async function approve(id) {
-            await supabase.from('listings').update({ status: "valide" }).eq('id', id);
-            alert("Approuvé !"); loadAdmin(); loadFeed();
+        function calc() {
+            const p = document.getElementById('p-price').value;
+            document.getElementById('calc-res').innerText = p ? `Gain net (85%): ${(p*0.85).toLocaleString()} FCFA` : "";
         }
 
-        async function loadWallet() {
-            const user = (await supabase.auth.getUser()).data.user;
-            const { data } = await supabase.from('sales').select('amount').eq('user_id', user.id);
-            const total = data ? data.reduce((s, a) => s + Number(a.amount), 0) : 0;
+        async function loadWallet(uid) {
+            const { data } = await supabase.from('sales').select('amount').eq('user_id', uid);
+            const total = data ? data.reduce((a, b) => a + b.amount, 0) : 0;
             document.getElementById('user-wallet').innerText = total.toLocaleString() + " FCFA";
         }
 
-        function updatePreview() {
-            const p = document.getElementById('p-price').value || 0;
-            document.getElementById('calc-preview').innerHTML = `Commission Nexus (15%): <span style="color:var(--red);">${(p*0.15).toLocaleString()} FCFA</span><br><b>Votre Gain (85%): <span style="color:var(--green);">${(p*0.85).toLocaleString()} FCFA</span></b>`;
+        async function loadAdmin() {
+            const { data: s } = await supabase.from('sales').select('commission');
+            const total = s ? s.reduce((a, b) => a + b.commission, 0) : 0;
+            document.getElementById('revenu-total').innerText = total.toLocaleString() + " FCFA";
         }
-
-        function switchTab(tab) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            document.getElementById('page-' + tab).classList.add('active');
-            document.getElementById('nav-' + tab).classList.add('active');
-        }
-
-        function buyFlow(id) { alert("Paiement sécurisé en cours d'intégration... Contactez le Prince."); }
     </script>
 </body>
 </html>
