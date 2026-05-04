@@ -1,146 +1,254 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NexusGlobal FIX</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexusGlobal | Empire Digital</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --gold: #d4af37; --black: #050505; --gray: #121212; --green: #00ff00; --red: #ff4d4d; }
+        * { box-sizing: border-box; transition: 0.3s; }
+        body { background: var(--black); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding-bottom: 70px; overflow-x: hidden; }
+        
+        /* AUTHENTIFICATION */
+        #auth-screen { position: fixed; inset: 0; background: var(--black); z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .auth-card { background: var(--gray); padding: 40px; border-radius: 25px; border: 1px solid var(--gold); width: 100%; max-width: 400px; text-align: center; box-shadow: 0 0 20px rgba(212, 175, 55, 0.2); }
+        
+        header { background: var(--black); border-bottom: 1px solid #222; padding: 20px; position: sticky; top: 0; z-index: 1000; text-align: center; color: var(--gold); font-weight: bold; letter-spacing: 2px; }
+        .feed { max-width: 600px; margin: auto; padding: 15px; }
+        .post { background: var(--gray); border-radius: 20px; margin-bottom: 25px; border: 1px solid #222; overflow: hidden; }
+        .post-img { width: 100%; height: 320px; object-fit: cover; }
+        .post-info { padding: 20px; }
 
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+        .page { display: none; padding: 20px; animation: slideUp 0.4s ease; }
+        .page.active { display: block; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-<style>
-body { background:#020617; color:white; font-family:sans-serif; }
-.hidden { display:none; }
-.glass { background:rgba(255,255,255,0.05); padding:20px; border-radius:10px; }
-input, select { color:black; }
-</style>
+        .admin-panel { display: none; background: linear-gradient(135deg, #004d00, #000); padding: 20px; border-radius: 15px; border: 1px solid var(--green); margin-bottom: 25px; }
+
+        input, select { width: 100%; padding: 15px; margin-bottom: 15px; border-radius: 10px; border: 1px solid #333; background: #000; color: white; font-size: 1rem; }
+        input:focus { border-color: var(--gold); outline: none; }
+        .btn-gold { background: var(--gold); color: black; border: none; padding: 18px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; font-size: 1rem; text-transform: uppercase; }
+        .btn-gold:disabled { background: #555; cursor: not-allowed; }
+        
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #0a0a0a; border-top: 1px solid var(--gold); display: flex; justify-content: space-around; padding: 15px 0; z-index: 1500; }
+        .nav-item { color: #555; text-align: center; cursor: pointer; font-size: 0.7rem; }
+        .nav-item.active { color: var(--gold); }
+        .nav-item i { font-size: 1.5rem; margin-bottom: 5px; }
+    </style>
 </head>
+<body>
 
-<body class="p-6">
+    <div id="auth-screen">
+        <div class="auth-card">
+            <h1 style="color:var(--gold); margin-bottom:10px;">NEXUS GLOBAL</h1>
+            <p style="color:#888; font-size:0.8rem; margin-bottom:30px;">ACCÈS SÉCURISÉ À L'EMPIRE</p>
+            
+            <input type="email" id="email" placeholder="Votre Email Professionnel">
+            <input type="password" id="pass" placeholder="Votre Mot de passe">
+            
+            <div style="text-align:left; margin-bottom:20px;">
+                <label style="font-size: 0.75rem; color:#aaa; cursor:pointer;">
+                    <input type="checkbox" id="check-18"> J'ai +18 ans et j'accepte les 15% de frais de sécurité Nexus.
+                </label>
+            </div>
+            
+            <button class="btn-gold" id="btn-auth" onclick="handleAuth()">S'IDENTIFIER / CRÉER COMPTE</button>
+            <p id="auth-msg" style="font-size:0.7rem; margin-top:15px; color:var(--red);"></p>
+        </div>
+    </div>
 
-<h1 class="text-2xl mb-6">NexusGlobal</h1>
+    <header>NEXUS GLOBAL</header>
 
-<div id="auth">
-<div class="glass">
+    <div id="page-home" class="page active">
+        <div id="main-feed" class="feed">
+            <p style="text-align:center; color:#555; margin-top:50px;">Connexion au serveur Nexus...</p>
+        </div>
+    </div>
 
-<input id="email" placeholder="Email" class="w-full p-2 mb-2">
-<input id="pass" type="password" placeholder="Mot de passe" class="w-full p-2 mb-2">
+    <div id="page-tools" class="page">
+        <div id="admin-panel" class="admin-panel">
+            <h3 style="color:var(--green); margin-top:0; text-align:center;">PANNEAU PATRON</h3>
+            <p style="font-size:0.7rem; color:#aaa; text-align:center; margin-bottom:5px;">COMMISSIONS TOTALES (15%)</p>
+            <h2 id="revenu-entreprise" style="text-align:center; margin:0;">0 FCFA</h2>
+            <div id="admin-actions" style="margin-top:20px; border-top:1px solid #004d00; padding-top:15px;"></div>
+        </div>
 
-<button id="btn-auth" class="bg-blue-600 w-full p-2 mb-2">Connexion</button>
-<button id="btn-switch" class="w-full text-sm text-gray-400">Créer un compte</button>
+        <div style="background:linear-gradient(to right, #1a1a1a, #000); padding:25px; border-radius:20px; border: 1px solid var(--gold); text-align:center; margin-bottom:30px;">
+            <p style="font-size: 0.75rem; color:#888; letter-spacing:1px;">MON WALLET VENDEUR (85%)</p>
+            <h1 id="user-wallet" style="color:var(--gold); margin:10px 0; font-size:2.5rem;">0 FCFA</h1>
+            <button class="btn-gold" style="width:auto; padding:10px 30px; font-size:0.8rem;">DEMANDER UN RETRAIT</button>
+        </div>
 
-</div>
-</div>
+        <h3 style="color:var(--gold); margin-bottom:20px;"><i class="fas fa-plus-circle"></i> Publier un nouveau compte</h3>
+        <input type="text" id="p-name" placeholder="Nom du compte (ex: TikTok 250k @...)">
+        <input type="number" id="p-price" placeholder="Prix de vente souhaité (FCFA)" oninput="updatePreview()">
+        
+        <div id="calc-preview" style="background:#111; padding:15px; border-radius:10px; font-size:0.8rem; margin-bottom:15px; border-left:4px solid var(--gold);">
+            Tapez un prix pour voir vos gains...
+        </div>
 
-<div id="app" class="hidden">
+        <p style="font-size:0.75rem; color:#666;">Preuve de propriété (Image du profil) :</p>
+        <input type="file" id="f1" accept="image/*">
+        
+        <button class="btn-gold" id="btn-pub" onclick="publish()">LANCER LA VÉRIFICATION</button>
+    </div>
 
-<h2 class="mt-6">Créer annonce</h2>
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="switchTab('home')" id="nav-home">
+            <i class="fas fa-th-large"></i><br>Flux Marché
+        </div>
+        <div class="nav-item" onclick="switchTab('tools')" id="nav-tools">
+            <i class="fas fa-wallet"></i><br>Outils & Gains
+        </div>
+    </div>
 
-<input id="subs" placeholder="Abonnés" class="w-full p-2 mb-2">
-<input id="price" type="number" placeholder="Prix" class="w-full p-2 mb-2">
+    <script>
+        // --- CONFIGURATION ---
+        const SUPABASE_URL = "https://yshwpfmlipaicispnroe.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_LBD0g00FuiFPdvmr75gnIg_1kuQFKAt";
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-<button id="btn-add" class="bg-green-600 w-full p-2 mb-4">Publier</button>
+        // --- AUTHENTIFICATION ---
+        async function handleAuth() {
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('pass').value;
+            const btn = document.getElementById('btn-auth');
+            const msg = document.getElementById('auth-msg');
 
-<div id="listings"></div>
+            if(!email || !pass) return msg.innerText = "Remplissez les champs.";
+            if(!document.getElementById('check-18').checked) return msg.innerText = "Acceptez les conditions.";
 
-</div>
+            btn.disabled = true; btn.innerText = "Connexion sécurisée...";
 
-<script>
-document.addEventListener("DOMContentLoaded", () => {
+            // Tentative de Login
+            let { data, error } = await supabase.auth.signInWithPassword({ email, password: pass });
 
-const SUPABASE_URL = "https://yshwpfmlipaicispnroe.supabase.co";
-const SUPABASE_KEY = "sb_publishable_LBD0g00FuiFPdvmr75gnIg_1kuQFKAt";
-const ADMIN_EMAIL = "demeaboubacar015@gmail.com";
+            if (error) {
+                // Si échec, on tente de créer le compte
+                let res = await supabase.auth.signUp({ email, password: pass });
+                if(res.error) {
+                    msg.innerText = "Erreur: " + res.error.message;
+                    btn.disabled = false; btn.innerText = "RÉESSAYER";
+                } else {
+                    // Création profil SQL
+                    await supabase.from('users').insert([{ id: res.data.user.id, email: email, role: "seller" }]);
+                    alert("Compte Nexus créé ! Re-cliquez pour entrer.");
+                    btn.disabled = false; btn.innerText = "S'IDENTIFIER MAINTENANT";
+                }
+            } else {
+                startApp(data.user);
+            }
+        }
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        async function startApp(user) {
+            document.getElementById('auth-screen').style.display = 'none';
+            // Vérification du rôle admin
+            const { data: profile } = await supabase.from('users').select('role').eq('id', user.id).single();
+            
+            if(profile && profile.role === "admin") {
+                document.getElementById('admin-panel').style.display = 'block';
+                loadAdmin();
+            }
+            loadFeed();
+            loadWallet();
+        }
 
-let isLogin = true;
+        // --- GESTION DU FLUX ---
+        async function loadFeed() {
+            const { data, error } = await supabase.from('listings').select('*').eq('status', 'valide').order('created_at', { ascending: false });
+            const feed = document.getElementById('main-feed');
+            
+            if(error) return feed.innerHTML = "Erreur de chargement.";
 
-// SWITCH
-document.getElementById("btn-switch").onclick = () => {
-isLogin = !isLogin;
-document.getElementById("btn-auth").innerText = isLogin ? "Connexion" : "Créer compte";
-document.getElementById("btn-switch").innerText = isLogin ? "Créer un compte" : "Se connecter";
-};
+            feed.innerHTML = data && data.length > 0 ? data.map(item => `
+                <div class="post">
+                    <img src="${item.img_profil}" class="post-img">
+                    <div class="post-info">
+                        <div style="font-size:0.7rem; color:#888; text-transform:uppercase;">Compte Vérifié</div>
+                        <strong style="font-size:1.1rem;">${item.name}</strong>
+                        <div style="color:var(--gold); font-size:1.4rem; font-weight:bold; margin-top:5px;">${Number(item.price).toLocaleString()} FCFA</div>
+                        <button class="btn-gold" style="padding:12px; margin-top:15px; font-size:0.8rem;" onclick="buyFlow('${item.id}')">ACHETER VIA SÉCURITÉ NEXUS</button>
+                    </div>
+                </div>
+            `).join('') : "<div style='text-align:center; color:#555; padding:40px;'>Aucun compte n'est en vente pour le moment.</div>";
+        }
 
-// AUTH BUTTON
-document.getElementById("btn-auth").onclick = async () => {
+        // --- PUBLICATION RÉELLE ---
+        async function publish() {
+            const name = document.getElementById('p-name').value;
+            const price = document.getElementById('p-price').value;
+            const file = document.getElementById('f1').files[0];
+            const btn = document.getElementById('btn-pub');
 
-const email = document.getElementById("email").value;
-const pass = document.getElementById("pass").value;
+            if(!name || !price || !file) return alert("Complétez tous les champs.");
+            if(file.size > 2 * 1024 * 1024) return alert("L'image est trop lourde (Max 2MB)");
 
-if(!email || !pass){
-alert("Remplis les champs");
-return;
-}
+            btn.disabled = true; btn.innerText = "Cryptage et Envoi...";
 
-if(isLogin){
-const { data, error } = await supabase.auth.signInWithPassword({ email, password: pass });
+            try {
+                const user = (await supabase.auth.getUser()).data.user;
+                const path = `proofs/${user.id}-${Date.now()}`;
+                
+                const { error: upErr } = await supabase.storage.from('proofs').upload(path, file);
+                if(upErr) throw upErr;
 
-if(error){ alert(error.message); return; }
+                const { data: urlData } = supabase.storage.from('proofs').getPublicUrl(path);
 
-startApp(data.user);
+                await supabase.from('listings').insert([{
+                    user_id: user.id, name, price, img_profil: urlData.publicUrl, status: "en_attente"
+                }]);
 
-}else{
-const { error } = await supabase.auth.signUp({ email, password: pass });
+                alert("✅ Publication envoyée ! Nexus vérifie la légitimité du compte sous 30 min.");
+                location.reload();
+            } catch (e) {
+                alert("Erreur: " + e.message);
+                btn.disabled = false; btn.innerText = "RÉESSAYER";
+            }
+        }
 
-if(error){ alert(error.message); return; }
+        // --- FONCTIONS ADMIN ET WALLET ---
+        async function loadAdmin() {
+            const { data: sales } = await supabase.from('sales').select('commission');
+            const total = sales ? sales.reduce((s, a) => s + Number(a.commission), 0) : 0;
+            document.getElementById('revenu-entreprise').innerText = total.toLocaleString() + " FCFA";
 
-alert("Compte créé !");
-}
-};
+            const { data: pendings } = await supabase.from('listings').select('*').eq('status', 'en_attente');
+            const area = document.getElementById('admin-actions');
+            area.innerHTML = pendings && pendings.length > 0 ? pendings.map(p => `
+                <div style="background:#111; padding:15px; border-radius:10px; margin-bottom:10px; border-left:3px solid var(--green);">
+                    <p style="margin:0; font-size:0.8rem;">${p.name} (${p.price} FCFA)</p>
+                    <button onclick="approve('${p.id}')" style="background:var(--green); color:black; border:none; padding:5px 10px; border-radius:5px; margin-top:5px; cursor:pointer;">VALIDER</button>
+                </div>
+            `).join('') : "<p style='font-size:0.7rem; color:#666;'>Aucun compte en attente.</p>";
+        }
 
-// START APP
-function startApp(user){
-document.getElementById("auth").classList.add("hidden");
-document.getElementById("app").classList.remove("hidden");
+        async function approve(id) {
+            await supabase.from('listings').update({ status: "valide" }).eq('id', id);
+            alert("Approuvé !"); loadAdmin(); loadFeed();
+        }
 
-if(user.email === ADMIN_EMAIL){
-alert("ADMIN connecté");
-}
+        async function loadWallet() {
+            const user = (await supabase.auth.getUser()).data.user;
+            const { data } = await supabase.from('sales').select('amount').eq('user_id', user.id);
+            const total = data ? data.reduce((s, a) => s + Number(a.amount), 0) : 0;
+            document.getElementById('user-wallet').innerText = total.toLocaleString() + " FCFA";
+        }
 
-loadListings();
-}
+        function updatePreview() {
+            const p = document.getElementById('p-price').value || 0;
+            document.getElementById('calc-preview').innerHTML = `Commission Nexus (15%): <span style="color:var(--red);">${(p*0.15).toLocaleString()} FCFA</span><br><b>Votre Gain (85%): <span style="color:var(--green);">${(p*0.85).toLocaleString()} FCFA</span></b>`;
+        }
 
-// ADD LISTING
-document.getElementById("btn-add").onclick = async () => {
+        function switchTab(tab) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById('page-' + tab).classList.add('active');
+            document.getElementById('nav-' + tab).classList.add('active');
+        }
 
-const { data:userData } = await supabase.auth.getUser();
-
-const subs = document.getElementById("subs").value;
-const price = document.getElementById("price").value;
-
-if(!subs || !price){
-alert("Champs vides");
-return;
-}
-
-const { error } = await supabase.from("listings").insert([{
-followers: subs,
-price: price,
-user_id: userData.user.id
-}]);
-
-if(error){ alert(error.message); return; }
-
-alert("Ajouté !");
-loadListings();
-};
-
-// LOAD
-async function loadListings(){
-const { data } = await supabase.from("listings").select("*");
-
-const div = document.getElementById("listings");
-div.innerHTML = "";
-
-data.forEach(x=>{
-div.innerHTML += `<div class="glass mb-2">${x.followers} abonnés - ${x.price}$</div>`;
-});
-}
-
-});
-</script>
-
+        function buyFlow(id) { alert("Paiement sécurisé en cours d'intégration... Contactez le Prince."); }
+    </script>
 </body>
 </html>
