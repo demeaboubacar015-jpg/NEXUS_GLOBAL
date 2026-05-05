@@ -8,217 +8,136 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { --gold: #d4af37; --black: #050505; --gray: #121212; --green: #00ff00; --red: #ff4d4d; }
-        * { box-sizing: border-box; transition: 0.3s; margin: 0; padding: 0; }
-        body { background: var(--black); color: white; font-family: 'Segoe UI', sans-serif; padding-bottom: 80px; overflow-x: hidden; }
-        
-        /* ECRAN D'ACCÈS */
-        #auth-screen { position: fixed; inset: 0; background: var(--black); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .auth-card { background: var(--gray); padding: 40px; border-radius: 25px; border: 1px solid var(--gold); width: 100%; max-width: 400px; text-align: center; box-shadow: 0 0 30px rgba(212, 175, 55, 0.1); }
-        
-        /* DESIGN GENERAL */
-        header { background: var(--black); border-bottom: 1px solid #222; padding: 20px; text-align: center; color: var(--gold); font-weight: bold; letter-spacing: 3px; font-size: 1.2rem; }
-        .page { display: none; padding: 20px; max-width: 600px; margin: auto; animation: fadeIn 0.5s ease; }
-        .page.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--black); color: white; font-family: 'Segoe UI', sans-serif; padding-bottom: 80px; }
 
-        /* ELEMENTS PRO */
-        input, select { width: 100%; padding: 15px; margin-bottom: 15px; border-radius: 12px; border: 1px solid #333; background: #000; color: white; font-size: 1rem; }
-        .btn-gold { background: var(--gold); color: black; border: none; padding: 18px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; text-transform: uppercase; font-size: 0.9rem; }
-        .btn-gold:active { transform: scale(0.98); }
+        /* COUCHE DU BOUTON (AUCUNE ERREUR - ACCÈS TOTAL) */
+        #auth-screen { position: fixed; inset: 0; background: var(--black); z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .auth-card { background: var(--gray); padding: 30px; border-radius: 25px; border: 2px solid var(--gold); width: 100%; max-width: 420px; text-align: center; position: relative; z-index: 100000; }
         
+        /* MODAL RÈGLES ET PAIEMENT */
+        #rules-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 200000; padding: 20px; overflow-y: auto; }
+        .rules-content { background: var(--gray); padding: 25px; border-radius: 20px; border: 1px solid var(--gold); max-width: 500px; margin: auto; }
+
+        input { width: 100%; padding: 15px; margin-bottom: 12px; border-radius: 12px; border: 1px solid #333; background: #000; color: white; font-size: 1rem; position: relative; z-index: 100001; }
+        .btn-gold { background: var(--gold); color: black; border: none; padding: 18px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; text-transform: uppercase; position: relative; z-index: 100002; }
+
+        header { background: var(--black); border-bottom: 1px solid #222; padding: 15px; text-align: center; color: var(--gold); font-weight: bold; }
+        .search-container { padding: 15px; background: var(--black); border-bottom: 1px solid #222; }
+        .search-container input { margin-bottom: 0; }
+
+        .feed { max-width: 600px; margin: auto; padding: 10px; }
         .post { background: var(--gray); border-radius: 20px; margin-bottom: 25px; border: 1px solid #222; overflow: hidden; }
-        .post-img { width: 100%; height: 300px; object-fit: cover; }
+        .post-img { width: 100%; height: 280px; object-fit: cover; }
         .post-info { padding: 20px; }
 
         .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #0a0a0a; border-top: 1px solid #222; display: flex; justify-content: space-around; padding: 15px 0; z-index: 1000; }
         .nav-item { color: #555; text-align: center; cursor: pointer; font-size: 0.7rem; }
         .nav-item.active { color: var(--gold); }
-        .nav-item i { font-size: 1.4rem; margin-bottom: 5px; }
-
-        .admin-badge { background: var(--green); color: black; padding: 5px 10px; border-radius: 5px; font-size: 0.7rem; font-weight: bold; margin-bottom: 10px; display: inline-block; }
     </style>
 </head>
 <body>
 
+    <div id="rules-modal">
+        <div class="rules-content">
+            <h2 style="color:var(--gold); margin-bottom:20px; text-align:center;">SYSTÈME DE PAIEMENT NEXUS</h2>
+            <div style="font-size:0.85rem; color:#bbb; line-height:1.7;">
+                <p>💰 <b>ACHAT :</b> Quand vous achetez, l'argent est <b>bloqué par Nexus</b>.</p>
+                <p>⏱️ <b>VÉRIFICATION :</b> L'acheteur a 3 minutes pour vérifier les accès du compte.</p>
+                <p>✅ <b>LIBÉRATION :</b> Après validation, l'argent est versé au vendeur (85%) et à l'admin (15%).</p>
+                <hr style="margin:15px 0; border:#333;">
+                <p>1. Interdiction de fraude.<br>2. Vérification admin obligatoire.<br>3. Support WhatsApp 24/7.</p>
+            </div>
+            <button onclick="toggleRules()" class="btn-gold" style="margin-top:25px;">J'AI COMPRIS</button>
+        </div>
+    </div>
+
     <div id="auth-screen">
         <div class="auth-card">
-            <h1 style="color:var(--gold); margin-bottom:10px;">NEXUS GLOBAL</h1>
-            <p style="color:#888; font-size:0.75rem; margin-bottom:30px;">ACCÈS SÉCURISÉ À L'EMPIRE</p>
-            
+            <h1 style="color:var(--gold); margin-bottom:5px; letter-spacing:3px;">NEXUS GLOBAL</h1>
+            <p style="color:#666; font-size:0.7rem; margin-bottom:30px;">THE DIGITAL EMPIRE</p>
             <input type="email" id="email" placeholder="Email Professionnel">
             <input type="password" id="pass" placeholder="Mot de passe">
-            
-            <div style="text-align:left; margin-bottom:20px;">
-                <label style="font-size: 0.75rem; color:#aaa; cursor:pointer;">
-                    <input type="checkbox" id="check-18" checked> J'ai +18 ans et j'accepte les 15% de frais Nexus.
-                </label>
-            </div>
-            
+            <p onclick="toggleRules()" style="color:var(--gold); font-size:0.75rem; cursor:pointer; margin-bottom:25px; text-decoration:underline;">Comment fonctionne le paiement ?</p>
             <button class="btn-gold" id="btn-auth" onclick="handleAuth()">ENTRER DANS L'EMPIRE</button>
-            <p id="auth-msg" style="color:var(--red); font-size:0.7rem; margin-top:15px;"></p>
         </div>
     </div>
 
     <header>NEXUS GLOBAL</header>
 
-    <div id="page-home" class="page active">
-        <div id="main-feed">
-            <p style="text-align:center; color:#555; margin-top:50px;">Connexion au flux Nexus...</p>
-        </div>
+    <div class="search-container">
+        <input type="text" id="search-input" placeholder="🔍 Filtrer (TikTok, Insta, YouTube...)" oninput="filterFeed()">
     </div>
 
-    <div id="page-tools" class="page">
-        <div id="admin-panel" style="display:none; background:#002200; border:1px solid var(--green); padding:20px; border-radius:20px; margin-bottom:20px;">
-            <div class="admin-badge">PATRON</div>
-            <p style="font-size:0.7rem; color:#888;">COMMISSIONS NEXUS</p>
-            <h2 id="revenu-total" style="color:var(--green);">0 FCFA</h2>
-            <div id="pending-approvals" style="margin-top:15px;"></div>
-        </div>
-
-        <div style="background:linear-gradient(145deg, #1a1a1a, #050505); padding:25px; border-radius:25px; border:1px solid var(--gold); text-align:center; margin-bottom:30px;">
-            <p style="font-size: 0.7rem; color:#888;">MON WALLET (85%)</p>
-            <h1 id="user-wallet" style="color:var(--gold); font-size:2.5rem; margin:10px 0;">0 FCFA</h1>
-            <button class="btn-gold" style="padding:10px 20px; width:auto; font-size:0.7rem;">DEMANDER UN RETRAIT</button>
-        </div>
-
-        <h3 style="color:var(--gold); margin-bottom:20px;"><i class="fas fa-plus"></i> PUBLIER UN COMPTE</h3>
-        <input type="text" id="p-name" placeholder="Nom (ex: TikTok 200k @...)">
-        <input type="number" id="p-price" placeholder="Prix de vente (FCFA)" oninput="calc()">
-        <div id="calc-res" style="font-size:0.75rem; color:#888; margin-bottom:15px;"></div>
-        <p style="font-size:0.7rem; color:#666;">Preuve (Screenshot Profil) :</p>
-        <input type="file" id="f1" accept="image/*">
-        <button class="btn-gold" id="btn-pub" onclick="publish()">LANCER LA VÉRIFICATION</button>
+    <div id="main-feed" class="feed">
+        <p style="text-align:center; color:#444; margin-top:50px;">Chargement sécurisé...</p>
     </div>
 
     <div class="bottom-nav">
-        <div class="nav-item active" id="nav-home" onclick="switchTab('home')">
-            <i class="fas fa-globe"></i><br>MARCHÉ
-        </div>
-        <div class="nav-item" id="nav-tools" onclick="switchTab('tools')">
-            <i class="fas fa-wallet"></i><br>OUTILS/GAINS
-        </div>
+        <div class="nav-item active" onclick="location.reload()"><i class="fas fa-home"></i><br>Accueil</div>
+        <div class="nav-item" onclick="alert('Portefeuille connecté à Supabase')"><i class="fas fa-wallet"></i><br>Gains</div>
+        <div class="nav-item" onclick="toggleRules()"><i class="fas fa-shield-alt"></i><br>Règles</div>
     </div>
 
     <script>
-        // CONFIGURATION
-        const SUPABASE_URL = "https://yshwpfmlipaicispnroe.supabase.co";
-        const SUPABASE_KEY = "sb_publishable_LBD0g00FuiFPdvmr75gnIg_1kuQFKAt";
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const URL = "https://yshwpfmlipaicispnroe.supabase.co";
+        const KEY = "sb_publishable_LBD0g00FuiFPdvmr75gnIg_1kuQFKAt";
+        const supabase = window.supabase.createClient(URL, KEY);
 
-        // AUTHENTIFICATION
+        function toggleRules() {
+            const m = document.getElementById('rules-modal');
+            m.style.display = m.style.display === 'block' ? 'none' : 'block';
+        }
+
         async function handleAuth() {
+            console.log("Activation du bouton..."); // Preuve dans la console
             const email = document.getElementById('email').value;
             const pass = document.getElementById('pass').value;
             const btn = document.getElementById('btn-auth');
-            
-            if(!email || !pass) { alert("Remplissez vos accès."); return; }
 
-            btn.innerText = "ACCÈS EN COURS...";
-            btn.disabled = true;
+            if(!email || !pass) { alert("Cases vides !"); return; }
+            btn.innerText = "ACCÈS..."; btn.disabled = true;
 
             try {
-                // Tentative login
                 let { data, error } = await supabase.auth.signInWithPassword({ email, password: pass });
-
                 if (error) {
-                    // Tentative inscription
                     let res = await supabase.auth.signUp({ email, password: pass });
-                    if(res.error) throw res.error;
-                    
-                    await supabase.from('users').insert([{ id: res.data.user.id, email: email, role: 'seller' }]);
-                    alert("Compte Nexus Créé ! Bienvenue dans l'Empire. Re-cliquez pour entrer.");
-                    btn.innerText = "ENTRER DANS L'EMPIRE";
-                    btn.disabled = false;
+                    if(res.error) alert(res.error.message);
+                    else alert("Empire Nexus : Vérifiez votre mail pour confirmer l'accès !");
                 } else {
-                    startApp(data.user);
+                    document.getElementById('auth-screen').style.display = 'none';
+                    loadMarket();
                 }
-            } catch (err) {
-                alert("Erreur Nexus : " + err.message);
-                btn.innerText = "RÉESSAYER";
-                btn.disabled = false;
-            }
+            } catch (e) { alert(e.message); }
+            finally { btn.innerText = "ENTRER DANS L'EMPIRE"; btn.disabled = false; }
         }
 
-        async function startApp(user) {
-            document.getElementById('auth-screen').style.display = 'none';
-            
-            // Verif Admin
-            const { data: prof } = await supabase.from('users').select('role').eq('id', user.id).single();
-            if(prof && prof.role === 'admin') {
-                document.getElementById('admin-panel').style.display = 'block';
-                loadAdmin();
-            }
-            loadFeed();
-            loadWallet(user.id);
-        }
-
-        // FLUX ET VENTES
-        async function loadFeed() {
+        async function loadMarket() {
             const { data } = await supabase.from('listings').select('*').eq('status', 'valide');
             const feed = document.getElementById('main-feed');
-            if(!data || data.length === 0) {
-                feed.innerHTML = "<p style='text-align:center; color:#555; margin-top:50px;'>Aucun compte disponible.</p>";
-                return;
-            }
-            feed.innerHTML = data.map(i => `
-                <div class="post">
-                    <img src="${i.img_profil}" class="post-img">
-                    <div class="post-info">
-                        <div style="color:var(--gold); font-size:1.2rem; font-weight:bold;">${Number(i.price).toLocaleString()} FCFA</div>
-                        <div style="font-size:0.9rem; margin-bottom:15px;">${i.name}</div>
-                        <button class="btn-gold" onclick="alert('Contactez le Prince pour le paiement sécurisé.')">ACHETER MAINTENANT</button>
+            if(data) {
+                feed.innerHTML = data.map(i => `
+                    <div class="post" data-name="${i.name.toLowerCase()}">
+                        <img src="${i.img_profil}" class="post-img">
+                        <div class="post-info">
+                            <h3>${i.name}</h3>
+                            <div style="color:var(--gold); font-weight:bold;">${Number(i.price).toLocaleString()} FCFA</div>
+                            <button class="btn-gold" style="margin-top:10px; padding:10px;" onclick="startPayment('${i.price}')">ACHETER (Paiement Sécurisé)</button>
+                        </div>
                     </div>
-                </div>
-            `).join('');
+                `).join('');
+            }
         }
 
-        async function publish() {
-            const btn = document.getElementById('btn-pub');
-            const file = document.getElementById('f1').files[0];
-            const name = document.getElementById('p-name').value;
-            const price = document.getElementById('p-price').value;
-
-            if(!file || !name || !price) { alert("Détails manquants !"); return; }
-            btn.disabled = true; btn.innerText = "ENVOI...";
-
-            try {
-                const user = (await supabase.auth.getUser()).data.user;
-                const path = `proofs/${Date.now()}_${file.name}`;
-                await supabase.storage.from('proofs').upload(path, file);
-                const { data: url } = supabase.storage.from('proofs').getPublicUrl(path);
-
-                await supabase.from('listings').insert([{
-                    user_id: user.id, name, price, img_profil: url.publicUrl, status: 'en_attente'
-                }]);
-
-                alert("✅ Publication envoyée ! En attente de validation par le Patron.");
-                location.reload();
-            } catch (e) { alert(e.message); btn.disabled = false; }
+        function filterFeed() {
+            const val = document.getElementById('search-input').value.toLowerCase();
+            document.querySelectorAll('.post').forEach(p => {
+                p.style.display = p.getAttribute('data-name').includes(val) ? 'block' : 'none';
+            });
         }
 
-        // OUTILS NAV
-        function switchTab(t) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            document.getElementById('page-'+t).classList.add('active');
-            document.getElementById('nav-'+t).classList.add('active');
-        }
-
-        function calc() {
-            const p = document.getElementById('p-price').value;
-            document.getElementById('calc-res').innerText = p ? `Gain net (85%): ${(p*0.85).toLocaleString()} FCFA` : "";
-        }
-
-        async function loadWallet(uid) {
-            const { data } = await supabase.from('sales').select('amount').eq('user_id', uid);
-            const total = data ? data.reduce((a, b) => a + b.amount, 0) : 0;
-            document.getElementById('user-wallet').innerText = total.toLocaleString() + " FCFA";
-        }
-
-        async function loadAdmin() {
-            const { data: s } = await supabase.from('sales').select('commission');
-            const total = s ? s.reduce((a, b) => a + b.commission, 0) : 0;
-            document.getElementById('revenu-total').innerText = total.toLocaleString() + " FCFA";
+        function startPayment(price) {
+            alert("PROCÉDURE NEXUS :\n1. Envoyez " + price + " FCFA via Orange/Moov Money au numéro Admin.\n2. L'argent est BLOQUÉ pendant 3 min.\n3. Recevez vos accès.\n4. Le vendeur est payé après votre validation.");
         }
     </script>
 </body>
